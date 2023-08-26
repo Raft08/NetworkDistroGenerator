@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'fr.atlasworld'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://repo.mattmalec.com/repository/releases'
+    }
+    maven {
+        url "https://libraries.minecraft.net"
+    }
+}
+
+dependencies {
+    implementation "com.google.code.gson:gson:2.10.1"
+    implementation "com.google.guava:guava:31.1-jre"
+    implementation "org.jetbrains:annotations:24.0.0"
+
+    implementation "ch.qos.logback:logback-classic:1.4.7"
+    implementation "org.slf4j:slf4j-api:2.0.7"
+
+    implementation 'com.mattmalec:Pterodactyl4J:2.BETA_140'
+
+    implementation "com.mojang:brigadier:1.0.18"
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': "fr.atlasworld.generator.DistroGenerator"
+    }
+    archiveClassifier.set('')
+    mergeServiceFiles()
+}
+
+//Only build shadowJar
+build.dependsOn(shadowJar)
+jar.enabled = false
