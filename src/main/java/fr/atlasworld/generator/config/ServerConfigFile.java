@@ -17,7 +17,7 @@ public record ServerConfigFile(String id, String version, String image, Location
         return new ServerConfigFile(
                 id,
                 "1.0.0",
-                "ghcr.io/software-noob/pterodactyl-images",
+                "ghcr.io/software-noob/pterodactyl-images:java_17",
                 new Location(
                         1,
                         1
