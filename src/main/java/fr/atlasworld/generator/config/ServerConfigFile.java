@@ -2,7 +2,7 @@ package fr.atlasworld.generator.config;
 
 import com.google.gson.JsonObject;
 
-public record ServerConfigFile(String id, String version, Location location, Node node, Resources resources,
+public record ServerConfigFile(String id, String version, String image, Location location, Node node, Resources resources,
                                JsonObject variables) {
     public record Location(int nest, int egg) {
     }
@@ -17,6 +17,7 @@ public record ServerConfigFile(String id, String version, Location location, Nod
         return new ServerConfigFile(
                 id,
                 "1.0.0",
+                "ghcr.io/software-noob/pterodactyl-images",
                 new Location(
                         1,
                         1
