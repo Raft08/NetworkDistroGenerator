@@ -70,34 +70,7 @@ public class GenerateCommand {
             source.logger().info("Indexing server files..");
             JsonArray serverFileIndex = new JsonArray();
 
-            File serverConfigFilesDirectory = new File(server, "configuration");
-            File serverFilesDirectory = new File(server, "files");
-            File serverPluginsDirectory = new File(server, "plugins");
-            File serverWorldsDirectory = new File(server, "worlds");
-
-            if (serverConfigFilesDirectory.isDirectory()) {
-                indexConfigDirectory(source.logger(), serverConfigFilesDirectory, serverFileIndex);
-            } else {
-                source.logger().warn("Configuration directory does not exist skipping indexing for configuration files");
-            }
-
-            if (serverFilesDirectory.isDirectory()) {
-                indexFileDirectory(source.logger(), serverFilesDirectory, serverFileIndex);
-            } else {
-                source.logger().warn("Files directory does not exist skipping indexing for files");
-            }
-
-            if (serverPluginsDirectory.isDirectory()) {
-                indexPluginDirectory(source.logger(), serverPluginsDirectory, serverFileIndex);
-            } else {
-                source.logger().warn("Plugins directory does not exist skipping indexing for plugins");
-            }
-
-            if (serverWorldsDirectory.isDirectory()) {
-                indexWorldDirectory(source.logger(), serverWorldsDirectory, serverFileIndex);
-            } else {
-                source.logger().warn("Worlds directory does not exist skipping indexing for worlds");
-            }
+            indexDirectory(source.logger(), server, serverFileIndex, "");
 
             serverIndexEntry.add("files", serverFileIndex);
             indexContent.add(serverIndexEntry);
@@ -109,64 +82,7 @@ public class GenerateCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void indexConfigDirectory(Logger logger, File directory, JsonArray index) {
-        indexDirectory(logger, directory, index, "configuration", "/plugins");
-    }
-
-    private static void indexFileDirectory(Logger logger, File directory, JsonArray index) {
-        indexDirectory(logger, directory, index, "file", "/");
-    }
-
-    private static void indexPluginDirectory(Logger logger, File directory, JsonArray index) {
-        File[] files = directory.listFiles();
-
-        if (files == null || files.length < 1) {
-            logger.warn("{} is empty, skipping indexation for plugins", directory.getAbsolutePath());
-            return;
-        }
-
-        for (File file : files) {
-            if (file.isDirectory() || !file.getName().endsWith(".jar")) {
-                logger.error("Plugins directory may only contain java executables files (jar files)!");
-                return;
-            }
-
-            JsonObject fileEntry = new JsonObject();
-            fileEntry.addProperty("name", file.getName());
-            fileEntry.addProperty("type", "plugin");
-            fileEntry.addProperty("location", file.getPath().replace("\\", "/"));
-            fileEntry.addProperty("remote_location", "/plugins/" + file.getName());
-
-            index.add(fileEntry);
-        }
-    }
-
-    private static void indexWorldDirectory(Logger logger, File directory, JsonArray index) {
-        File[] files = directory.listFiles();
-
-        if (files == null || files.length < 1) {
-            logger.warn("{} is empty, skipping indexation for worlds", directory.getAbsolutePath());
-            return;
-        }
-
-        for (File file : files) {
-            if (file.isDirectory() || !file.getName().endsWith(".zip")) {
-                logger.error("Worlds directory may only contain zipped/compressed files (zip files)!");
-                return;
-            }
-
-            JsonObject fileEntry = new JsonObject();
-            fileEntry.addProperty("name", file.getName());
-            fileEntry.addProperty("type", "world");
-            fileEntry.addProperty("location", file.getPath().replace("\\", "/"));
-            fileEntry.addProperty("remote_location", "/" + "world.zip");
-            fileEntry.addProperty("process_file", "uncompress");
-
-            index.add(fileEntry);
-        }
-    }
-
-    private static void indexDirectory(Logger logger, File directory, JsonArray index, String type, String remoteDir) {
+    private static void indexDirectory(Logger logger, File directory, JsonArray index, String remoteDir) {
         File[] files = directory.listFiles();
 
         if (files == null || files.length < 1) {
@@ -177,16 +93,21 @@ public class GenerateCommand {
         Gson gson = new Gson();
         for (File file : files) {
             if (file.isDirectory()) {
-                indexDirectory(logger, file, index, type, remoteDir);
+                indexDirectory(logger, file, index, remoteDir + "/" + file.getName());
+                continue;
             }
 
             logger.info("Indexing {}", file.getAbsolutePath());
 
+            String remoteLocation = remoteDir + "/" + file.getName();
+            if (remoteLocation.startsWith("/")) {
+                remoteLocation = remoteLocation.replaceFirst("/", "");
+            }
+
             JsonObject fileEntry = new JsonObject();
             fileEntry.addProperty("name", file.getName());
-            fileEntry.addProperty("type", type);
             fileEntry.addProperty("location", file.getPath().replace("\\", "/"));
-            fileEntry.addProperty("remote_location", remoteDir + file.getName());
+            fileEntry.addProperty("remote_location", remoteLocation);
 
             logger.info("Index: {}", gson.toJson(fileEntry));
 

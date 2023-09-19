@@ -40,21 +40,6 @@ public class CreateCommand {
             return Command.SINGLE_SUCCESS;
         }
 
-        File configs = new File(serverDir, "configuration");
-        File plugins = new File(serverDir, "plugins");
-        File worlds = new File(serverDir, "worlds");
-        File other = new File(serverDir, "files");
-
-
-        configs.mkdirs();
-        source.logger().info("Created configurations directory");
-        plugins.mkdirs();
-        source.logger().info("Created plugins directory");
-        worlds.mkdirs();
-        source.logger().info("Created worlds directory");
-        other.mkdirs();
-        source.logger().info("Created files directory");
-
         GsonFileLoader<ServerConfigFile> serverLoader = new GsonFileLoader<>(
                 new File(serversConfigDirectory, id + ".json"),
                 new GsonBuilder().setPrettyPrinting().create(),
